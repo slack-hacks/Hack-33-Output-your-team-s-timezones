@@ -1,12 +1,10 @@
 <?php
+
+	// Your oAuth Token
+	$token = '[AUTH TOKEN]';
+
 	// Set the timezone independant of the server
 	date_default_timezone_set("UTC");
-
-	// Return something to indicate it's working
-	header('Content-Type: application/json');
-	echo json_encode(array(
-		'text' => 'Calculating...'
-	));
 
 	// Get the channel ID
 	$channelID = $_POST['channel_id'];
@@ -15,7 +13,7 @@
 	include 'Slack.php';
 
 	// Create new Slack instance
-	$Slack = new Slack('[API KEY]');
+	$Slack = new Slack($token);
 
 	// Ge the cuurent channel and user
 	$channel = $Slack->call('channels.info', array('channel' => $channelID));
@@ -46,10 +44,13 @@
 		// Get the name of the user
 		$name = ($member['user']['real_name']) ? $member['user']['real_name'] : $member['user']['name'];
 
+		// Add the timezeone offset to current time
+		$memberTime = $now + $member['user']['tz_offset'];
+
 		// Append the details to the array as the key
 		$times[$key][] = '*' . $name . '*: ' .
-		date('h:ia jS M', $now + $member['user']['tz_offset']) .
-		' (' . sprintf("%+d", $userOffset) . ' hours _' . $member['user']['tz_label'] . '_)';
+		date('h:i A', $memberTime) . ' local time on ' . date('jS M', $memberTime) .
+		' (UTC' . sprintf("%+d", $userOffset) . ' hours _' . $member['user']['tz_label'] . '_)';
 
 	}
 
